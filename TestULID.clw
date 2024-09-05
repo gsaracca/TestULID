@@ -24,7 +24,7 @@ rta             cstring(37)
 startTime       long
 endTime         long
 elapsedTime     real
-max_gen         long(10)
+max_gen         long(1000000)
 i               long
     code 
     SetGMT( +3 )                ! GMT-3 is Buenos Aires.
@@ -33,20 +33,20 @@ i               long
     init_log( 'NewUUIDv7.txt' )	
 	loop i = 1 to max_gen
 		rta = NewUUIDv7()
-		add_log( 'NewUUIDv7 --> ' & i & ' --> ' & rta )
+		add_log( rta & ' --> NewUUIDv7 (' & i & ')' )
 	end !* loop *		
 	endTime = clock()
 	
 	elapsedTime = (endTime - startTime + 1) / 100
-	add_log( 'Elapsed time (sec) --> ' & elapsedTime )
     done_log()
-    message( elapsedTime )
+    message( 'Elapsed time (sec) --> ' & elapsedTime )
     
 init_log    procedure( string _fname )
     code
     xText{ prop:name } = clip( _fname )
     create( xText )
     open( xText )
+    buffer( xText, 1000 )
     stream( xText )
     
 add_log     procedure( string _msg )

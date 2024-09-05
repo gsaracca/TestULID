@@ -1,5 +1,4 @@
 ! -------------------------------------------------------------------------
-!
 ! Universally Unique Lexicographically Sortable Identifier
 !
 ! Usage:
@@ -8,7 +7,6 @@
 !       include( 'ULID.inc' ),once
 !
 ! Gustavo Saracca, 2024.
-!
 ! -------------------------------------------------------------------------
 
     module( 'ULID.CLW' )
