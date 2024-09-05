@@ -9,7 +9,7 @@
             GetSystemTimeAsFileTime(*FileTime),pascal,raw
         end         
         include( 'i64.inc' ),once        
-        GetSystemTimeAsUnixTime( *decimal _timeStamp )
+        !GetSystemTimeAsUnixTime( *decimal _timeStamp )
     end !* end *
     
 FileTime            group,type
@@ -68,11 +68,19 @@ lookup_table_lwr    cstring('000102030405060708090a0b0c0d0e0f' & |
 SetGMT          procedure( long _gmt ) 
     code
     GMT = _gmt
-
+    
+! ---------------------------------------------------------------------------------------------------
+! Conversion to Binary Array to String
+! ---------------------------------------------------------------------------------------------------
+! flag = 0 => hexa upper case 
+! flag = 1 => hexa lower case 
+! ---------------------------------------------------------------------------------------------------    
 NewUUIDv7       procedure( BOOL flag=0 )!,string
+max_size        equate( 37 )                ! UUID_SIZE*2 + 1
+
 uuid            byte,dim(UUID_SIZE)
-sUUID           cstring(37)
-xUUID           cstring(37)
+sUUID           cstring(max_size)
+xUUID           cstring(max_size)
 lookup_table    &cstring,auto
 idx             long
 lck             long
@@ -83,14 +91,15 @@ i               long
         lookup_table &= lookup_table_lwr        
     else
         lookup_table &= lookup_table_upr        
-    end !* if *    
+    end !* if *  
+    
     loop i = 1 to UUID_SIZE
         idx = (i-1) * 2 + 1
         lck = uuid[i] * 2 + 1
         sUUID[ idx ]     = lookup_table[ lck ]
         sUUID[ idx + 1 ] = lookup_table[ lck + 1 ]
     end !* loop *
-    sUUID[ UUID_SIZE*2 + 1 ] = '<0>'
+    sUUID[ max_size ] = '<0>'
     
     xUUID = sUUID[01:08] &'-'& sUUID[09:12] &'-'& sUUID[13:16] &'-'& sUUID[17:20] &'-'& sUUID[21:32+1]
 
@@ -165,8 +174,9 @@ i               long
     code
     if maximum( _ulid, 1 ) >= UUID_SIZE
         GetSystemTimeAsUnixTime( timeStamp )
-        
+             
         i64FromDecimal( i64, timeStamp )
+        
         _ulid[ 1 ] = uuid8[ 6 ]
         _ulid[ 2 ] = uuid8[ 5 ]
         _ulid[ 3 ] = uuid8[ 4 ]
@@ -179,8 +189,8 @@ i               long
         end !* loop *        
 
         ! Set version (7) and variant bits (2 MSB as 01)
-        _ulid[7] = bor( band(_ulid[7], 00FH), bshift(7, 4) )
-        _ulid[9] = bor( band(_ulid[9], 03FH), 080H )
-    end !* if *    
-    
+        _ulid[7] = bor( band(_ulid[7], 00FH), 070H )        ! (uuid[6] & 0x0f) | (7 << 4)
+        _ulid[9] = bor( band(_ulid[9], 03FH), 080H )        ! (uuid[8] & 0x3f) | 0x80
+    end !* if *
+   
 !* end *
